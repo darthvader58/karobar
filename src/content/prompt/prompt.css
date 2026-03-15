@@ -1,0 +1,124 @@
+#karobar-prompt {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  padding: 16px;
+  box-sizing: border-box;
+
+  /* Start hidden, off-screen to the right */
+  display: none;
+  opacity: 0;
+  transform: translateX(calc(100% + 32px));
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#karobar-prompt.karobar-visible {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Header */
+.karobar-header {
+  margin-bottom: 10px;
+}
+
+.karobar-logo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #16a34a;
+}
+
+/* Body */
+.karobar-body {
+  margin-bottom: 14px;
+}
+
+.karobar-job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.karobar-job-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.karobar-company-name {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Duplicate warning */
+.karobar-duplicate-warning {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #d97706;
+  font-weight: 500;
+}
+
+.karobar-hidden {
+  display: none;
+}
+
+/* Actions */
+.karobar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.karobar-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  line-height: 1;
+}
+
+.karobar-btn-primary {
+  background-color: #16a34a;
+  color: #ffffff;
+  border: 1.5px solid #16a34a;
+}
+
+.karobar-btn-primary:hover {
+  background-color: #15803d;
+  border-color: #15803d;
+}
+
+.karobar-btn-secondary {
+  background-color: transparent;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+}
+
+.karobar-btn-secondary:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
