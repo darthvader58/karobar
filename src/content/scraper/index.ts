@@ -3,6 +3,15 @@ import { getScraper } from "./registry";
 import { scrapeGeneric } from "./generic";
 import { EMPTY_JOB_RECORD } from "../../shared/sanitize";
 
+// Side-effect imports — trigger self-registration into PLATFORM_REGISTRY
+import './platforms/linkedin';
+import './platforms/greenhouse';
+import './platforms/icims';
+import './platforms/workday';
+import './platforms/ripplematch';
+import './platforms/lever';
+import './platforms/smartrecruiters';
+
 /**
  * Dispatches to the appropriate scraper for the current page.
  *
