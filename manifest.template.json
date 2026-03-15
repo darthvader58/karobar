@@ -21,7 +21,7 @@
     "default_icon": {}
   },
   "oauth2": {
-    "client_id": "test-id-placeholder.apps.googleusercontent.com",
+    "client_id": "__GOOGLE_CLIENT_ID__",
     "scopes": ["https://www.googleapis.com/auth/spreadsheets.append"]
   },
   "web_accessible_resources": [

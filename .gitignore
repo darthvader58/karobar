@@ -2,5 +2,7 @@ node_modules/
 dist/
 *.js.map
 coverage/
+.env
+manifest.json
 
 .kiro/specs/karobar-job-tracker
