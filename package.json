@@ -1,0 +1,20 @@
+{
+  "name": "karobar",
+  "version": "1.0.0",
+  "description": "Track job applications to Google Sheets",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@vitest/browser": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "esbuild": "^0.21.5",
+    "fast-check": "^3.19.0",
+    "jsdom": "^24.1.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
