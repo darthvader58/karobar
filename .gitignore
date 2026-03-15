@@ -4,5 +4,4 @@ dist/
 coverage/
 .env
 manifest.json
-
 .kiro/specs/karobar-job-tracker
