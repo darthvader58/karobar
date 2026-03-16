@@ -54,4 +54,8 @@ Karobar uses a three-signal priority pipeline to identify job pages with low fal
 
 Pages that only contain job-related keywords (without structural signals) are intentionally not detected, to avoid false positives on job listing pages.
 
+---
+
+If you liked the project, don't forget to leave a star and consider <a href="https://github.com/sponsors/darthvader58">sponsoring</a> as your way of showing love to this extension.
+
 Made with &lt;3 by Shashwat Raj. 
