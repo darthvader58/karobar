@@ -105,31 +105,108 @@ export function signalOpenGraph(): boolean {
 }
 
 const JOB_TERMS_PATTERN = /\b(engineer|developer|analyst|manager|designer|intern)\b/i;
+const JOB_PATH_PATTERN =
+  /\/(apply|application|jobs?|careers?|job|position|opening|opportunit(?:y|ies)|public\/job)\b/i;
+const APPLICATION_COPY_PATTERN =
+  /\b(job application|apply for this job|apply for this role|submit application|start your application)\b/i;
 
 /**
  * Signal 3: URL path + form heuristic.
- * Returns true ONLY if BOTH conditions are met:
- *  1. location.pathname matches a job-related path segment
- *  2. A submission form is present on the page
- *
- * Keyword-only matching is explicitly excluded per Requirement 1.6.
+ * Returns true when a page looks like a real job application surface:
+ *  1. It has applicant fields / upload / submit controls
+ *  2. It also has job identity cues in the URL, title, or page copy
  *
  * Requirements: 1.5, 1.6
  */
 export function signalUrlAndForm(): boolean {
   try {
-    const JOB_PATH = /\/(apply|jobs|careers|job|position|opening|opportunities|opportunity)\b/i;
-    const hasJobPath = JOB_PATH.test(location.pathname);
-    if (!hasJobPath) return false;
+    const hasJobPath = JOB_PATH_PATTERN.test(location.pathname);
+    const pageText = [
+      document.title,
+      getMetaContent("property", "og:title"),
+      getMetaContent("property", "og:description"),
+      queryText("h1"),
+      queryText("main"),
+      queryText("form"),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    const hasForm =
-      document.querySelector("form[action]") !== null ||
+    const applicantFieldCount = countApplicantFields();
+    const hasSubmitControl =
       document.querySelector('form button[type="submit"]') !== null ||
-      document.querySelector('button[type="submit"]') !== null;
+      document.querySelector('button[type="submit"]') !== null ||
+      document.querySelector('input[type="submit"]') !== null;
+    const hasResumeUpload =
+      document.querySelector('input[type="file"]') !== null ||
+      /resume|cv|cover letter/i.test(pageText);
+    const hasApplicationCopy = APPLICATION_COPY_PATTERN.test(pageText);
+    const hasJobIdentity =
+      hasJobPath ||
+      /job application for/i.test(document.title) ||
+      JOB_TERMS_PATTERN.test(pageText);
 
-    return hasForm;
+    const hasApplicationSurface =
+      hasSubmitControl && (applicantFieldCount >= 2 || hasResumeUpload || hasApplicationCopy);
+
+    return hasApplicationSurface && hasJobIdentity;
   } catch {
     // location or DOM access failed — safe fallback
   }
   return false;
+}
+
+function countApplicantFields(): number {
+  let count = 0;
+
+  if (
+    document.querySelector('[autocomplete="given-name"]') ||
+    document.querySelector('input[name*="first" i]') ||
+    document.querySelector('input[id*="first" i]')
+  ) {
+    count += 1;
+  }
+
+  if (
+    document.querySelector('[autocomplete="family-name"]') ||
+    document.querySelector('input[name*="last" i]') ||
+    document.querySelector('input[id*="last" i]')
+  ) {
+    count += 1;
+  }
+
+  if (
+    document.querySelector('[autocomplete="email"]') ||
+    document.querySelector('input[type="email"]') ||
+    document.querySelector('input[name*="email" i]')
+  ) {
+    count += 1;
+  }
+
+  if (
+    document.querySelector('[autocomplete="tel"]') ||
+    document.querySelector('input[type="tel"]') ||
+    document.querySelector('input[name*="phone" i]')
+  ) {
+    count += 1;
+  }
+
+  return count;
+}
+
+function getMetaContent(attribute: "property" | "name", key: string): string {
+  try {
+    const el = document.querySelector(`meta[${attribute}="${key}"]`);
+    return el instanceof HTMLMetaElement ? el.content || "" : "";
+  } catch {
+    return "";
+  }
+}
+
+function queryText(selector: string): string {
+  try {
+    return document.querySelector(selector)?.textContent || "";
+  } catch {
+    return "";
+  }
 }

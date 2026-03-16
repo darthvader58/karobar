@@ -3,6 +3,7 @@ import { icimsScraper } from "../src/content/scraper/platforms/icims";
 import { ripplematchScraper } from "../src/content/scraper/platforms/ripplematch";
 import { workdayScraper } from "../src/content/scraper/platforms/workday";
 import { matchKnownPlatform } from "../src/content/detector/platforms";
+import { signalUrlAndForm } from "../src/content/detector/signals";
 import { inferJobTerm } from "../src/content/scraper/utils";
 
 function setPage(url: string, html: string): void {
@@ -149,5 +150,58 @@ describe("ATS scraper regressions", () => {
     expect(
       matchKnownPlatform("https://www.tesla.com/careers/search/job/service-assistant-261564")
     ).toEqual({ platform: "tesla" });
+  });
+
+  it("detects custom application pages that are not tied to a known ATS vendor", () => {
+    setPage(
+      "https://www.citadel.com/careers/details/software-engineer-intern/",
+      `<!doctype html>
+      <html>
+        <head>
+          <title>Job Application for Software Engineer Intern</title>
+          <meta property="og:title" content="Software Engineer Intern">
+        </head>
+        <body>
+          <main>
+            <h1>Software Engineer Intern</h1>
+            <p>Apply for this job</p>
+            <form action="/apply">
+              <input name="first_name" autocomplete="given-name">
+              <input name="last_name" autocomplete="family-name">
+              <input name="email" type="email" autocomplete="email">
+              <input type="file" name="resume">
+              <button type="submit">Submit application</button>
+            </form>
+          </main>
+        </body>
+      </html>`
+    );
+
+    expect(signalUrlAndForm()).toBe(true);
+  });
+
+  it("does not flag generic contact forms as job applications", () => {
+    setPage(
+      "https://www.example.com/contact",
+      `<!doctype html>
+      <html>
+        <head>
+          <title>Contact Us</title>
+        </head>
+        <body>
+          <main>
+            <h1>Contact Us</h1>
+            <form action="/contact">
+              <input name="first_name">
+              <input name="last_name">
+              <input name="email" type="email">
+              <button type="submit">Submit</button>
+            </form>
+          </main>
+        </body>
+      </html>`
+    );
+
+    expect(signalUrlAndForm()).toBe(false);
   });
 });
