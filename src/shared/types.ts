@@ -67,6 +67,7 @@ export type ExtensionMessage =
   | { type: "LOG_JOB_RECORD"; record: JobRecord }
   | { type: "GET_RECENT_RECORDS" }
   | { type: "SAVE_SHEET_CONFIG"; sheetId: string }
+  | { type: "SIGN_IN" }
   | { type: "SIGN_OUT" }
   | { type: "GET_STATUS" }
   | { type: "ADD_CUSTOM_PATTERN"; pattern: string }

@@ -76,6 +76,13 @@ async function build() {
     target: "es2020",
   });
 
+  // Copy popup HTML into dist/ and fix the script path to be relative to dist/
+  const popupHtml = fs.readFileSync(
+    path.resolve(__dirname, "src/popup/index.html"),
+    "utf8"
+  ).replace("../dist/popup.js", "popup.js");
+  fs.writeFileSync(path.resolve(__dirname, "dist/popup.html"), popupHtml, "utf8");
+
   console.log("Build complete.");
 }
 

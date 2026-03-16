@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Karobar",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzHOzBY3wW1UPF3ezHoseNyIp1hVwI6/DAqH4Yu71WxKHRSztaxTBGHNFl0EgpI+6/rIgWOhKR9y/xyzxBVTlARub9HiD2TBsBM6y9tWI7oIZaaD2DgWiTkBnlZYK9MawKBlknknusrFMm81RnZhWjDS8iI0jJqFCO5xG6gxc5f8ASNR/sodSbizKJ/Ow9fz84tSWsUeNGxkU1WGveS5FFteEOTXz4CLuSBeXeICWqu2h2kLqJ9Q2Ts98SwKzIJHur5Ylnkvdq69AngQ43L/0RkcI/Ttg4uAKkvo9K+YfvQQEvRbHF/bni/BYhdDQIZBtqsb7Lop30/CMY6M9oQUK9wIDAQAB",
   "version": "1.0.0",
   "description": "Track job applications to Google Sheets",
   "permissions": ["identity", "storage", "tabs", "activeTab"],
@@ -13,16 +14,16 @@
     {
       "matches": ["<all_urls>"],
       "js": ["dist/content.js"],
-      "run_at": "document_interactive"
+      "run_at": "document_idle"
     }
   ],
   "action": {
-    "default_popup": "src/popup/index.html",
+    "default_popup": "dist/popup.html",
     "default_icon": {}
   },
   "oauth2": {
     "client_id": "__GOOGLE_CLIENT_ID__",
-    "scopes": ["https://www.googleapis.com/auth/spreadsheets.append"]
+    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
   },
   "web_accessible_resources": [
     {

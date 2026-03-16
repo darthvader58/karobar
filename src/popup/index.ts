@@ -37,12 +37,24 @@ interface PopupState {
   customPatterns: string[];
 }
 
+interface AuthUiState {
+  pending: boolean;
+  tone: "info" | "success" | "error" | null;
+  message: string;
+}
+
 let state: PopupState = {
   isAuthenticated: false,
   sheetId: "",
   recentRecords: [],
   failedQueue: [],
   customPatterns: [],
+};
+
+let authUi: AuthUiState = {
+  pending: false,
+  tone: null,
+  message: "",
 };
 
 // ---------------------------------------------------------------------------
@@ -52,6 +64,8 @@ let state: PopupState = {
 function renderAuthStatus(container: HTMLElement): void {
   const div = document.createElement("div");
   div.className = "section";
+  const buttonLabel = authUi.pending ? "Working..." : state.isAuthenticated ? "Sign Out" : "Sign In";
+  const authMessageClass = authUi.tone ? `${authUi.tone}-msg` : "";
   div.innerHTML = `
     <div class="section-title">Account</div>
     <div class="status-row">
@@ -59,24 +73,56 @@ function renderAuthStatus(container: HTMLElement): void {
         ${state.isAuthenticated ? "Signed in" : "Not signed in"}
       </span>
       ${state.isAuthenticated
-        ? `<button id="btn-signout" class="btn-danger">Sign Out</button>`
-        : `<button id="btn-signin" class="btn-primary">Sign In</button>`
+        ? `<button id="btn-signout" class="btn-danger" ${authUi.pending ? "disabled" : ""}>${buttonLabel}</button>`
+        : `<button id="btn-signin" class="btn-primary" ${authUi.pending ? "disabled" : ""}>${buttonLabel}</button>`
       }
     </div>
+    ${authUi.message ? `<div class="${authMessageClass}" style="margin-top:8px">${authUi.message}</div>` : ""}
   `;
   container.appendChild(div);
 
   if (state.isAuthenticated) {
     div.querySelector("#btn-signout")?.addEventListener("click", async () => {
-      await sendMsg({ type: "SIGN_OUT" });
-      await loadState();
+      authUi = { pending: true, tone: "info", message: "Signing out..." };
+      render();
+      try {
+        await sendMsg({ type: "SIGN_OUT" });
+        await loadState();
+        authUi = { pending: false, tone: "success", message: "Signed out." };
+      } catch (err) {
+        authUi = {
+          pending: false,
+          tone: "error",
+          message: err instanceof Error ? err.message : "Failed to sign out.",
+        };
+      }
       render();
     });
   } else {
     div.querySelector("#btn-signin")?.addEventListener("click", async () => {
-      // Trigger interactive auth via GET_STATUS (background will prompt sign-in)
-      await sendMsg<StatusResponse>({ type: "GET_STATUS" });
-      await loadState();
+      authUi = { pending: true, tone: "info", message: "Opening Google sign-in..." };
+      render();
+
+      try {
+        const res = await sendMsg<{ success: boolean; error?: string }>({ type: "SIGN_IN" });
+        if (res.success) {
+          await loadState();
+          authUi = { pending: false, tone: "success", message: "Signed in." };
+        } else {
+          authUi = {
+            pending: false,
+            tone: "error",
+            message: res.error ?? "Sign-in failed.",
+          };
+        }
+      } catch (err) {
+        authUi = {
+          pending: false,
+          tone: "error",
+          message: err instanceof Error ? err.message : "Sign-in failed.",
+        };
+      }
+
       render();
     });
   }

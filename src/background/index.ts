@@ -11,7 +11,7 @@ import {
   LogJobRecordResponse,
   CheckDuplicateResponse,
 } from "../shared/types";
-import { getToken, signOut, isAuthenticated } from "./auth";
+import { getToken, signOut, isAuthenticated, describeAuthError } from "./auth";
 import { sheetsClient } from "./sheetsClient";
 import { getSync, setSync, getLocal } from "./storage";
 import { addRecentRecord } from "./storage";
@@ -98,6 +98,18 @@ async function handleMessage(
           sendResponse({ success: true });
         } else {
           sendResponse({ success: false, error: result.message });
+        }
+        break;
+      }
+
+      case "SIGN_IN": {
+        try {
+          await getToken(true);
+          sendResponse({ success: true });
+        } catch (err) {
+          const error = describeAuthError(err);
+          console.error("[auth] SIGN_IN failed:", err);
+          sendResponse({ success: false, error });
         }
         break;
       }
