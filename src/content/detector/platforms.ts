@@ -28,7 +28,12 @@ export const KNOWN_PLATFORM_PATTERNS: KnownPlatformPattern[] = [
   {
     platform: "ripplematch",
     hostname: /(?:^|\.)ripplematch\.com$/i,
-    pathPattern: /\/(?:job|apply)(?:\/|$)/i,
+    pathPattern: /\/(?:job|apply|jobs|v2\/public\/job)(?:\/|$)/i,
+  },
+  {
+    platform: "tesla",
+    hostname: /(?:^|\.)tesla\.com$/i,
+    pathPattern: /\/careers\/search\/job(?:\/|$)/i,
   },
   {
     platform: "lever",
