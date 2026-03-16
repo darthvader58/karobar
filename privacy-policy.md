@@ -81,7 +81,7 @@ We may update this privacy policy from time to time. Any changes will be posted 
 
 If you have questions or concerns about this privacy policy, please contact:
 
-**Email:** [your-email@example.com]  
+**Email:** rajayshashwat@gmail.com  
 **GitHub:** [https://github.com/darthvader58/karobar](https://github.com/darthvader58/karobar)
 
 ---
