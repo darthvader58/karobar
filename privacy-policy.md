@@ -1,6 +1,6 @@
 # Privacy Policy for Karobar
 
-**Last updated:** March 15, 2026
+**Last updated:** March 16, 2026
 
 Karobar is a Chrome extension that helps you track job applications by logging job details to your personal Google Sheet. This privacy policy explains what data Karobar collects, how it's used, and how it's protected.
 
@@ -10,7 +10,7 @@ Karobar is a Chrome extension that helps you track job applications by logging j
 
 Karobar collects and processes the following data:
 
-1. **Job page content** — When you visit a job application page and choose to log it, Karobar reads the page content to extract job details (title, company, location, employment type, etc.)
+1. **Job page content** — When you visit a job application page and choose to log it, or manually click **Scrape Current Page** from the extension UI, Karobar reads the page content to extract job details (title, company, location, employment type, etc.)
 
 2. **Google account information** — When you sign in, Karobar receives your Google account authentication token to access the Google Sheets API on your behalf
 
@@ -36,7 +36,7 @@ Karobar does not:
 - Send data to any server other than Google's Sheets API (which you explicitly authorize)
 - Use your data for advertising or marketing purposes
 
-The only external service Karobar communicates with is the **Google Sheets API**, and only when you explicitly click "Add to Sheet" to log a job application.
+The only external service Karobar communicates with is the **Google Sheets API**, and only when you explicitly choose to log a job application, either from the page overlay or by using **Scrape Current Page** in the extension UI.
 
 ---
 

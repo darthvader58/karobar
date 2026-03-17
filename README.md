@@ -31,6 +31,8 @@ Navigate to any job application page. If Karobar detects it as a job page, an ov
 
 The overlay also shows a warning if you've already logged that URL before.
 
+If automatic detection misses a page, you can still open the extension UI and click **Scrape Current Page** to force a scrape on the active tab and log it manually.
+
 ### Custom URL patterns
 
 For job pages on company-specific sites that aren't in the built-in platform list, you can add custom URL patterns in the popup:
@@ -50,7 +52,7 @@ Karobar uses a three-signal priority pipeline to identify job pages with low fal
 
 1. **Known platform URL match** — checks hostname + path against a registry of known job platforms and any custom patterns you've added. Highest confidence, lowest latency.
 2. **Structured data** — looks for `JobPosting` JSON-LD or Open Graph job meta tags on the page.
-3. **URL path + form heuristic** — checks if the URL path looks like a job application path and a submit form is present.
+3. **Application surface heuristic** — checks for real applicant fields, submit controls, resume upload, and job identity cues in the URL/title/page copy. This is what lets Karobar catch custom employer-hosted application pages beyond the named ATS platforms.
 
 Pages that only contain job-related keywords (without structural signals) are intentionally not detected, to avoid false positives on job listing pages.
 
