@@ -15,7 +15,7 @@ const observer = new IntersectionObserver(
 );
 
 document
-  .querySelectorAll<HTMLElement>(".hero-copy, .hero-card, .feature-card, .timeline-item, .setup-card")
+  .querySelectorAll<HTMLElement>(".hero-copy, .feature-card, .timeline-item, .setup-card, .footer-inner")
   .forEach((node, index) => {
     node.classList.add("reveal");
     node.style.transitionDelay = `${Math.min(index * 70, 280)}ms`;
