@@ -1,7 +1,9 @@
 import { greenhouseScraper } from "../src/content/scraper/platforms/greenhouse";
 import { icimsScraper } from "../src/content/scraper/platforms/icims";
 import { linkedinScraper } from "../src/content/scraper/platforms/linkedin";
+import { leverScraper } from "../src/content/scraper/platforms/lever";
 import { ripplematchScraper } from "../src/content/scraper/platforms/ripplematch";
+import { smartrecruitersScraper } from "../src/content/scraper/platforms/smartrecruiters";
 import { workdayScraper } from "../src/content/scraper/platforms/workday";
 import { matchKnownPlatform } from "../src/content/detector/platforms";
 import { signalUrlAndForm } from "../src/content/detector/signals";
@@ -130,6 +132,68 @@ describe("ATS scraper regressions", () => {
     expect(record.department).toContain("Engineering");
     expect(record.workArrangement).toBe("Hybrid");
     expect(record.jobUrl).toBe("https://www.linkedin.com/jobs/view/4232161209");
+  });
+
+  it("scrapes Lever postings with modern category blocks", () => {
+    setPage(
+      "https://jobs.lever.co/openai/abc123",
+      `<!doctype html>
+      <html>
+        <head>
+          <title>Research Engineer at OpenAI</title>
+          <meta property="og:title" content="Research Engineer">
+          <link rel="canonical" href="https://jobs.lever.co/openai/abc123">
+        </head>
+        <body>
+          <div class="main-header-logo"><img alt="OpenAI"></div>
+          <div class="posting-headline"><h2 data-qa="posting-name">Research Engineer</h2></div>
+          <div class="posting-categories">
+            <span class="sort-by-time-posting-category team">Applied AI</span>
+            <span class="sort-by-time-posting-category location">San Francisco, CA</span>
+            <span class="sort-by-time-posting-category commitment">Full-time</span>
+          </div>
+        </body>
+      </html>`
+    );
+
+    const record = leverScraper.scrape();
+
+    expect(record.jobTitle).toBe("Research Engineer");
+    expect(record.companyName).toBe("OpenAI");
+    expect(record.location).toContain("San Francisco");
+    expect(record.employmentType).toBe("Full-time");
+    expect(record.department).toBe("Applied AI");
+    expect(record.jobUrl).toBe("https://jobs.lever.co/openai/abc123");
+  });
+
+  it("scrapes SmartRecruiters postings with structured data fallbacks", () => {
+    setPage(
+      "https://jobs.smartrecruiters.com/ExampleCo/744000082260485-customer-success-manager",
+      `<!doctype html>
+      <html>
+        <head>
+          <meta property="og:title" content="Customer Success Manager">
+          <link rel="canonical" href="https://jobs.smartrecruiters.com/ExampleCo/744000082260485-customer-success-manager">
+          <script type="application/ld+json">
+            {"@context":"https://schema.org","@type":"JobPosting","title":"Customer Success Manager","employmentType":"FULL_TIME","department":"Customer Success","jobLocation":{"@type":"Place","address":{"@type":"PostalAddress","addressLocality":"New York","addressRegion":"NY","addressCountry":"US"}},"hiringOrganization":{"@type":"Organization","name":"ExampleCo"},"url":"https://jobs.smartrecruiters.com/ExampleCo/744000082260485-customer-success-manager"}
+          </script>
+        </head>
+        <body>
+          <h1 class="job-title">Customer Success Manager</h1>
+        </body>
+      </html>`
+    );
+
+    const record = smartrecruitersScraper.scrape();
+
+    expect(record.jobTitle).toBe("Customer Success Manager");
+    expect(record.companyName).toBe("ExampleCo");
+    expect(record.location).toContain("New York");
+    expect(record.employmentType).toBe("Full-time");
+    expect(record.department).toBe("Customer Success");
+    expect(record.jobUrl).toBe(
+      "https://jobs.smartrecruiters.com/ExampleCo/744000082260485-customer-success-manager"
+    );
   });
 
   it("scrapes iCIMS job pages without falling back to the employer careers homepage", () => {
