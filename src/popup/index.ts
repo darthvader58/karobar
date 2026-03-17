@@ -5,6 +5,7 @@
 
 import type {
   ExtensionMessage,
+  JobRecord,
   StatusResponse,
   StoredRecord,
   FailedRecord,
@@ -43,6 +44,12 @@ interface AuthUiState {
   message: string;
 }
 
+interface ManualScrapeUiState {
+  pending: boolean;
+  tone: "info" | "success" | "error" | null;
+  message: string;
+}
+
 let state: PopupState = {
   isAuthenticated: false,
   sheetId: "",
@@ -52,6 +59,12 @@ let state: PopupState = {
 };
 
 let authUi: AuthUiState = {
+  pending: false,
+  tone: null,
+  message: "",
+};
+
+let manualScrapeUi: ManualScrapeUiState = {
   pending: false,
   tone: null,
   message: "",
@@ -184,6 +197,112 @@ function renderSheetConfig(container: HTMLElement): void {
       msgEl.className = "error-msg";
       msgEl.textContent = res.error ?? "Failed to save sheet.";
     }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Current Page section
+// ---------------------------------------------------------------------------
+
+function renderCurrentPageActions(container: HTMLElement): void {
+  const div = document.createElement("div");
+  div.className = "section";
+  const messageClass = manualScrapeUi.tone ? `${manualScrapeUi.tone}-msg` : "";
+
+  div.innerHTML = `
+    <div class="section-title">Current Page</div>
+    <div style="font-size:12px;color:#5f6368;margin-bottom:8px">
+      Force a scrape on the active tab even if automatic detection did not trigger.
+    </div>
+    <button id="btn-scrape-current" class="btn-primary" ${manualScrapeUi.pending ? "disabled" : ""}>
+      ${manualScrapeUi.pending ? "Scraping..." : "Scrape Current Page"}
+    </button>
+    ${manualScrapeUi.message ? `<div class="${messageClass}" style="margin-top:8px">${manualScrapeUi.message}</div>` : ""}
+  `;
+  container.appendChild(div);
+
+  div.querySelector("#btn-scrape-current")?.addEventListener("click", async () => {
+    if (!state.isAuthenticated) {
+      manualScrapeUi = {
+        pending: false,
+        tone: "error",
+        message: "Sign in before scraping a page.",
+      };
+      render();
+      return;
+    }
+
+    if (!state.sheetId) {
+      manualScrapeUi = {
+        pending: false,
+        tone: "error",
+        message: "Save a Google Sheet before scraping a page.",
+      };
+      render();
+      return;
+    }
+
+    manualScrapeUi = {
+      pending: true,
+      tone: "info",
+      message: "Scraping the active tab...",
+    };
+    render();
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) {
+        throw new Error("No active tab found.");
+      }
+
+      const scrapeResponse = await sendTabMessage<{
+        success: boolean;
+        record?: JobRecord;
+        error?: string;
+      }>(tab.id, { type: "SCRAPE_PAGE" });
+
+      if (!scrapeResponse.success || !scrapeResponse.record) {
+        throw new Error(scrapeResponse.error ?? "Could not scrape the active tab.");
+      }
+
+      const duplicate = await sendMsg<{ isDuplicate: boolean }>({
+        type: "CHECK_DUPLICATE",
+        url: scrapeResponse.record.jobUrl,
+      });
+      if (duplicate.isDuplicate) {
+        manualScrapeUi = {
+          pending: false,
+          tone: "info",
+          message: "This page URL is already logged.",
+        };
+        render();
+        return;
+      }
+
+      const logResult = await sendMsg<LogJobRecordResponse>({
+        type: "LOG_JOB_RECORD",
+        record: scrapeResponse.record,
+      });
+
+      if (!logResult.success) {
+        throw new Error(logResult.error ?? "Failed to log the scraped page.");
+      }
+
+      await loadState();
+      manualScrapeUi = {
+        pending: false,
+        tone: "success",
+        message: "Current page scraped and logged.",
+      };
+    } catch (err) {
+      manualScrapeUi = {
+        pending: false,
+        tone: "error",
+        message: err instanceof Error ? err.message : "Failed to scrape the active tab.",
+      };
+    }
+
+    render();
   });
 }
 
@@ -355,6 +474,18 @@ async function loadState(): Promise<void> {
   };
 }
 
+function sendTabMessage<T>(tabId: number, msg: ExtensionMessage): Promise<T> {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, msg, (response: T) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve(response);
+      }
+    });
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------
@@ -364,6 +495,7 @@ function render(): void {
   app.innerHTML = "";
   renderAuthStatus(app);
   renderSheetConfig(app);
+  renderCurrentPageActions(app);
   renderRecentRecords(app);
   renderCustomPatterns(app);
 }

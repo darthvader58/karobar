@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karobar | Job Tracking Without the Spreadsheet Pain</title>
+    <meta
+      name="description"
+      content="Karobar is a Chrome extension that detects job application pages and logs them to your Google Sheet in one click."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <nav class="topbar">
+          <div class="brand">
+            <img src="../karobar_logo.png" alt="Karobar logo" class="brand-mark" />
+            <span>Karobar</span>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <p class="eyebrow">Chrome extension for meticulous job tracking</p>
+            <h1>
+              Stop losing job applications and submissions
+              <span>between tabs, forms, and spreadsheets.</span>
+            </h1>
+            <p class="hero-text">
+              Karobar notices when you are on an application page, pulls the key
+              details, and logs them into your Google Sheet before the trail goes cold.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#features">Explore features</a>
+              <a class="button button-secondary" href="#setup">View Workflow</a>
+            </div>
+
+            <ul class="hero-points">
+              <li>Works with LinkedIn, Greenhouse, Lever, Workday, iCIMS, and more.</li>
+              <li>Falls back to a generic scraper when the page is not on a known platform.</li>
+              <li>Keeps custom URL patterns for company career sites you care about.</li>
+            </ul>
+          </section>
+
+          <section class="hero-card" aria-label="Extension preview">
+            <div class="window-chrome">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="extension-card">
+              <div class="extension-header">
+                <div>
+                  <p class="card-label">Popup preview</p>
+                  <h2>Karobar</h2>
+                </div>
+                <span class="status-badge">Ready to log</span>
+              </div>
+
+              <div class="data-block">
+                <span class="mini-label">Detected page</span>
+                <strong>Software Engineer Intern</strong>
+                <p>Example Labs · Remote</p>
+              </div>
+
+              <div class="data-grid">
+                <article>
+                  <span class="mini-label">Action</span>
+                  <strong>Add to Sheet</strong>
+                </article>
+                <article>
+                  <span class="mini-label">Duplicate check</span>
+                  <strong>Enabled</strong>
+                </article>
+              </div>
+
+              <div class="data-block accent">
+                <span class="mini-label">Logged fields</span>
+                <p>
+                  Job title, company, location, job term, URL, employment type,
+                  department, work arrangement, date applied.
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </header>
+
+      <main>
+        <section class="section section-dark" id="features">
+          <div class="section-heading">
+            <p class="eyebrow">Features</p>
+            
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="feature-number">01</span>
+              <h3>Detects application pages with structure, not guesswork</h3>
+              <p>
+                Karobar prioritizes platform matches, structured job metadata,
+                and page heuristics so it triggers on actual application pages.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <span class="feature-number">02</span>
+              <h3>Logs directly into a sheet you already control</h3>
+              <p>
+                No new dashboard. No vendor lock-in. Your Google Sheet stays the
+                source of truth from day one.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <span class="feature-number">03</span>
+              <h3>Built for messy real-world job hunts</h3>
+              <p>
+                Known platforms are supported explicitly, while custom patterns
+                and a generic scraper cover the long tail of company sites.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section timeline-section" id="workflow">
+          <div class="section-heading narrow">
+            <p class="eyebrow">Workflow</p>
+            <h2>Three steps between finding a job and having it recorded cleanly.</h2>
+          </div>
+
+          <div class="timeline">
+            <article class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div>
+                <p class="timeline-step">Step 1</p>
+                <h3>Open a job application page</h3>
+                <p>
+                  Karobar checks the URL, page structure, and form signals to
+                  decide whether you are on a page worth logging.
+                </p>
+              </div>
+            </article>
+
+            <article class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div>
+                <p class="timeline-step">Step 2</p>
+                <h3>Review the prompt or scrape manually</h3>
+                <p>
+                  Use the automatic prompt when detection fires, or trigger a
+                  scrape from the popup if you want control.
+                </p>
+              </div>
+            </article>
+
+            <article class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div>
+                <p class="timeline-step">Step 3</p>
+                <h3>Send the result to your Google Sheet</h3>
+                <p>
+                  The extension writes the application details, checks for
+                  duplicates, and keeps recent activity visible in the popup.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section setup-section" id="setup">
+          <div class="section-heading narrow">
+            <p class="eyebrow">Setup</p>
+            <h2>The first-run path is short.</h2>
+          </div>
+
+          <div class="setup-grid">
+            <article class="setup-card">
+              <strong>1. Sign in</strong>
+              <p>Authenticate with Google so Karobar can write to your spreadsheet.</p>
+            </article>
+            <article class="setup-card">
+              <strong>2. Paste a sheet URL or ID</strong>
+              <p>Use any Google Sheet you want. The extension validates it before saving.</p>
+            </article>
+            <article class="setup-card">
+              <strong>3. Start applying</strong>
+              <p>Karobar handles the repetitive logging while you focus on applications.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

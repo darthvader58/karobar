@@ -64,6 +64,7 @@ export type ExtensionMessage =
   | { type: "CHECK_DUPLICATE"; url: string }
   | { type: "USER_CONFIRMED" }
   | { type: "USER_DISMISSED" }
+  | { type: "SCRAPE_PAGE" }
   | { type: "LOG_JOB_RECORD"; record: JobRecord }
   | { type: "GET_RECENT_RECORDS" }
   | { type: "SAVE_SHEET_CONFIG"; sheetId: string }
