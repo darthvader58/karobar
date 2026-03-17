@@ -1,5 +1,6 @@
 import { greenhouseScraper } from "../src/content/scraper/platforms/greenhouse";
 import { icimsScraper } from "../src/content/scraper/platforms/icims";
+import { linkedinScraper } from "../src/content/scraper/platforms/linkedin";
 import { ripplematchScraper } from "../src/content/scraper/platforms/ripplematch";
 import { workdayScraper } from "../src/content/scraper/platforms/workday";
 import { matchKnownPlatform } from "../src/content/detector/platforms";
@@ -83,6 +84,52 @@ describe("ATS scraper regressions", () => {
     expect(record.jobUrl).toBe(
       "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/details/Manager--Site-Reliability-Engineer---DGX-Cloud_JR2010800-1"
     );
+  });
+
+  it("scrapes LinkedIn job postings across current unified job layouts", () => {
+    setPage(
+      "https://www.linkedin.com/jobs/view/4232161209",
+      `<!doctype html>
+      <html>
+        <head>
+          <meta property="og:title" content="Software Engineer">
+          <link rel="canonical" href="https://www.linkedin.com/jobs/view/4232161209">
+        </head>
+        <body>
+          <div class="job-details-jobs-unified-top-card__job-title">
+            <h1>Software Engineer</h1>
+          </div>
+          <a class="job-details-jobs-unified-top-card__company-name">OpenAI</a>
+          <div class="job-details-jobs-unified-top-card__primary-description-container">
+            OpenAI · San Francisco, California, United States
+          </div>
+          <div class="job-details-jobs-unified-top-card__tertiary-description-container">
+            San Francisco, California, United States
+          </div>
+          <div class="job-details-jobs-unified-top-card__workplace-type">Hybrid</div>
+          <ul>
+            <li class="description__job-criteria-item">
+              <h3 class="description__job-criteria-subheader">Employment type</h3>
+              <span class="description__job-criteria-text">Full-time</span>
+            </li>
+            <li class="description__job-criteria-item">
+              <h3 class="description__job-criteria-subheader">Job function</h3>
+              <span class="description__job-criteria-text">Engineering</span>
+            </li>
+          </ul>
+        </body>
+      </html>`
+    );
+
+    const record = linkedinScraper.scrape();
+
+    expect(record.jobTitle).toBe("Software Engineer");
+    expect(record.companyName).toBe("OpenAI");
+    expect(record.location).toContain("San Francisco");
+    expect(record.employmentType).toBe("Full-time");
+    expect(record.department).toContain("Engineering");
+    expect(record.workArrangement).toBe("Hybrid");
+    expect(record.jobUrl).toBe("https://www.linkedin.com/jobs/view/4232161209");
   });
 
   it("scrapes iCIMS job pages without falling back to the employer careers homepage", () => {
