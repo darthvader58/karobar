@@ -4,7 +4,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzHOzBY3wW1UPF3ezHoseNyIp1hVwI6/DAqH4Yu71WxKHRSztaxTBGHNFl0EgpI+6/rIgWOhKR9y/xyzxBVTlARub9HiD2TBsBM6y9tWI7oIZaaD2DgWiTkBnlZYK9MawKBlknknusrFMm81RnZhWjDS8iI0jJqFCO5xG6gxc5f8ASNR/sodSbizKJ/Ow9fz84tSWsUeNGxkU1WGveS5FFteEOTXz4CLuSBeXeICWqu2h2kLqJ9Q2Ts98SwKzIJHur5Ylnkvdq69AngQ43L/0RkcI/Ttg4uAKkvo9K+YfvQQEvRbHF/bni/BYhdDQIZBtqsb7Lop30/CMY6M9oQUK9wIDAQAB",
   "version": "1.0.0",
   "description": "Track job applications to Google Sheets",
-  "permissions": ["identity", "storage", "tabs", "activeTab"],
+  "permissions": ["identity", "storage", "tabs", "activeTab", "alarms"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "dist/background.js",
@@ -23,7 +23,10 @@
   },
   "oauth2": {
     "client_id": "__GOOGLE_CLIENT_ID__",
-    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/gmail.readonly"
+    ]
   },
   "web_accessible_resources": [
     {

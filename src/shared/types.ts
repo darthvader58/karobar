@@ -10,6 +10,44 @@ export interface JobRecord {
   workArrangement: string;
 }
 
+export interface ApplicationStageFields {
+  currentStage: string;
+  oaDeadline: string;
+  round1Date: string;
+  round1Deadline: string;
+  round2Date: string;
+  round2Deadline: string;
+  finalRoundDate: string;
+  finalRoundDeadline: string;
+  outcome: string;
+  gmailThreadId: string;
+  lastGmailSync: string;
+}
+
+export interface GmailSyncConfig {
+  enabled: boolean;
+  extractionEndpoint: string;
+  gmailQuery: string;
+}
+
+export interface GmailMessageRecord {
+  id: string;
+  threadId: string;
+  subject: string;
+  from: string;
+  date: string;
+  snippet: string;
+  bodyText: string;
+}
+
+export interface GmailStageExtraction extends Partial<ApplicationStageFields> {
+  companyName?: string;
+  jobTitle?: string;
+  jobUrl?: string;
+  confidence?: number;
+  shouldUpdate: boolean;
+}
+
 // StoredRecord — persisted version with metadata
 export interface StoredRecord extends JobRecord {
   dateApplied: string; // YYYY-MM-DD
@@ -51,12 +89,15 @@ export interface PlatformScraper {
 export interface SyncStorage {
   sheetId: string;
   customPatterns: string[];
+  gmailSyncConfig: GmailSyncConfig;
 }
 
 export interface LocalStorage {
   recentRecords: StoredRecord[];
   failedQueue: FailedRecord[];
   loggedUrls: string[];
+  processedGmailMessageIds: string[];
+  lastGmailSyncAt: string;
 }
 
 // ExtensionMessage — typed discriminated union for all chrome.runtime messages
@@ -71,6 +112,8 @@ export type ExtensionMessage =
   | { type: "SIGN_IN" }
   | { type: "SIGN_OUT" }
   | { type: "GET_STATUS" }
+  | { type: "SAVE_GMAIL_CONFIG"; config: GmailSyncConfig }
+  | { type: "RUN_GMAIL_SYNC" }
   | { type: "ADD_CUSTOM_PATTERN"; pattern: string }
   | { type: "REMOVE_CUSTOM_PATTERN"; pattern: string }
   | { type: "DISMISS_PROMPT" };
@@ -84,9 +127,18 @@ export interface StatusResponse {
   isAuthenticated: boolean;
   sheetId: string;
   sheetName?: string;
+  gmailSyncConfig: GmailSyncConfig;
+  lastGmailSyncAt: string;
 }
 
 export interface LogJobRecordResponse {
   success: boolean;
+  error?: string;
+}
+
+export interface GmailSyncResponse {
+  success: boolean;
+  processedCount: number;
+  updatedCount: number;
   error?: string;
 }

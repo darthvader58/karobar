@@ -20,6 +20,17 @@ When you land on a job application page, Karobar pops up and asks if you want to
 
 It works on named platforms (LinkedIn, Greenhouse, iCIMS, Workday, RippleMatch, Lever, SmartRecruiters) with dedicated scrapers, and falls back to a best-effort generic scraper for any other job page. Fields that can't be scraped are left blank for you to fill in manually.
 
+Karobar can also monitor Gmail for recruiting updates and write later-stage milestones back into the same sheet row, including:
+
+- Current stage
+- OA deadline
+- Round 1 date / deadline
+- Round 2 date / deadline
+- Final round date / deadline
+- Outcome
+- Gmail thread ID
+- Last Gmail sync timestamp
+
 ---
 
 ## Usage
@@ -32,6 +43,19 @@ Navigate to any job application page. If Karobar detects it as a job page, an ov
 The overlay also shows a warning if you've already logged that URL before.
 
 If automatic detection misses a page, you can still open the extension UI and click **Scrape Current Page** to force a scrape on the active tab and log it manually.
+
+### Gmail monitoring
+
+The extension now supports alarm-based Gmail polling from the background service worker. To enable it:
+
+1. Deploy the included Vercel function at `api/gmail-extract.js`.
+2. Set `OPENAI_API_KEY` in Vercel.
+3. Optionally set `OPENAI_MODEL` in Vercel. The default is `gpt-4o-mini`.
+4. Sign in again in the extension after rebuilding, since the extension now requests Gmail read scope in addition to Sheets scope.
+5. In the extension popup, enable Gmail monitoring and paste your Vercel endpoint URL such as `https://your-app.vercel.app/api/gmail-extract`.
+6. Save the Gmail settings and use **Sync now** once to verify the end-to-end flow.
+
+The default Gmail query is tuned for recruiting updates, but you can override it in the popup.
 
 ### Custom URL patterns
 

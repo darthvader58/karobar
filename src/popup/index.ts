@@ -5,6 +5,8 @@
 
 import type {
   ExtensionMessage,
+  GmailSyncConfig,
+  GmailSyncResponse,
   JobRecord,
   StatusResponse,
   StoredRecord,
@@ -36,6 +38,8 @@ interface PopupState {
   recentRecords: StoredRecord[];
   failedQueue: FailedRecord[];
   customPatterns: string[];
+  gmailSyncConfig: GmailSyncConfig;
+  lastGmailSyncAt: string;
 }
 
 interface AuthUiState {
@@ -50,12 +54,25 @@ interface ManualScrapeUiState {
   message: string;
 }
 
+interface GmailUiState {
+  pending: boolean;
+  tone: "info" | "success" | "error" | null;
+  message: string;
+}
+
 let state: PopupState = {
   isAuthenticated: false,
   sheetId: "",
   recentRecords: [],
   failedQueue: [],
   customPatterns: [],
+  gmailSyncConfig: {
+    enabled: false,
+    extractionEndpoint: "",
+    gmailQuery:
+      '(interview OR recruiter OR "online assessment" OR "coding challenge" OR "technical screen" OR "application update") newer_than:30d',
+  },
+  lastGmailSyncAt: "",
 };
 
 let authUi: AuthUiState = {
@@ -65,6 +82,12 @@ let authUi: AuthUiState = {
 };
 
 let manualScrapeUi: ManualScrapeUiState = {
+  pending: false,
+  tone: null,
+  message: "",
+};
+
+let gmailUi: GmailUiState = {
   pending: false,
   tone: null,
   message: "",
@@ -307,6 +330,103 @@ function renderCurrentPageActions(container: HTMLElement): void {
 }
 
 // ---------------------------------------------------------------------------
+// Gmail Sync section
+// ---------------------------------------------------------------------------
+
+function renderGmailSync(container: HTMLElement): void {
+  const div = document.createElement("div");
+  div.className = "section";
+  const messageClass = gmailUi.tone ? `${gmailUi.tone}-msg` : "";
+  const lastSyncText = state.lastGmailSyncAt
+    ? new Date(state.lastGmailSyncAt).toLocaleString()
+    : "Never";
+
+  div.innerHTML = `
+    <div class="section-title">Gmail Monitoring</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px">
+      <input type="checkbox" id="gmail-enabled" ${state.gmailSyncConfig.enabled ? "checked" : ""} />
+      Enable Gmail stage tracking
+    </label>
+    <input
+      type="text"
+      id="gmail-endpoint"
+      placeholder="https://your-vercel-app.vercel.app/api/gmail-extract"
+      value="${state.gmailSyncConfig.extractionEndpoint}"
+    />
+    <input
+      type="text"
+      id="gmail-query"
+      placeholder='Gmail search query'
+      value="${state.gmailSyncConfig.gmailQuery}"
+    />
+    <div class="record-meta" style="margin-bottom:8px">Last sync: ${lastSyncText}</div>
+    <div class="input-row">
+      <button id="btn-save-gmail" class="btn-primary" ${gmailUi.pending ? "disabled" : ""}>Save</button>
+      <button id="btn-run-gmail-sync" class="btn-secondary" ${gmailUi.pending ? "disabled" : ""}>Sync now</button>
+    </div>
+    ${gmailUi.message ? `<div class="${messageClass}" style="margin-top:8px">${gmailUi.message}</div>` : ""}
+  `;
+  container.appendChild(div);
+
+  div.querySelector("#btn-save-gmail")?.addEventListener("click", async () => {
+    const enabled = div.querySelector<HTMLInputElement>("#gmail-enabled")?.checked ?? false;
+    const extractionEndpoint =
+      div.querySelector<HTMLInputElement>("#gmail-endpoint")?.value.trim() ?? "";
+    const gmailQuery = div.querySelector<HTMLInputElement>("#gmail-query")?.value.trim() ?? "";
+
+    gmailUi = { pending: true, tone: "info", message: "Saving Gmail settings..." };
+    render();
+
+    try {
+      const config: GmailSyncConfig = {
+        enabled,
+        extractionEndpoint,
+        gmailQuery: gmailQuery || state.gmailSyncConfig.gmailQuery,
+      };
+
+      await sendMsg<{ success: boolean }>({ type: "SAVE_GMAIL_CONFIG", config });
+      state.gmailSyncConfig = config;
+      gmailUi = { pending: false, tone: "success", message: "Gmail settings saved." };
+    } catch (err) {
+      gmailUi = {
+        pending: false,
+        tone: "error",
+        message: err instanceof Error ? err.message : "Failed to save Gmail settings.",
+      };
+    }
+
+    render();
+  });
+
+  div.querySelector("#btn-run-gmail-sync")?.addEventListener("click", async () => {
+    gmailUi = { pending: true, tone: "info", message: "Running Gmail sync..." };
+    render();
+
+    try {
+      const result = await sendMsg<GmailSyncResponse>({ type: "RUN_GMAIL_SYNC" });
+      if (!result.success) {
+        throw new Error(result.error ?? "Gmail sync failed.");
+      }
+
+      await loadState();
+      gmailUi = {
+        pending: false,
+        tone: "success",
+        message: `Processed ${result.processedCount} emails and updated ${result.updatedCount} rows.`,
+      };
+    } catch (err) {
+      gmailUi = {
+        pending: false,
+        tone: "error",
+        message: err instanceof Error ? err.message : "Gmail sync failed.",
+      };
+    }
+
+    render();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // RecentRecords section
 // ---------------------------------------------------------------------------
 
@@ -471,6 +591,8 @@ async function loadState(): Promise<void> {
     recentRecords: records.recentRecords ?? [],
     failedQueue: records.failedQueue ?? [],
     customPatterns: syncData.customPatterns ?? [],
+    gmailSyncConfig: status.gmailSyncConfig,
+    lastGmailSyncAt: status.lastGmailSyncAt,
   };
 }
 
@@ -495,6 +617,7 @@ function render(): void {
   app.innerHTML = "";
   renderAuthStatus(app);
   renderSheetConfig(app);
+  renderGmailSync(app);
   renderCurrentPageActions(app);
   renderRecentRecords(app);
   renderCustomPatterns(app);

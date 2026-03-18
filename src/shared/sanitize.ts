@@ -1,4 +1,4 @@
-import type { JobRecord } from "./types";
+import type { ApplicationStageFields, JobRecord } from "./types";
 
 /**
  * Strips HTML tags and trims whitespace from a raw string.
@@ -24,6 +24,20 @@ export const EMPTY_JOB_RECORD: JobRecord = {
   workArrangement: "",
 };
 
+export const EMPTY_APPLICATION_STAGE_FIELDS: ApplicationStageFields = {
+  currentStage: "",
+  oaDeadline: "",
+  round1Date: "",
+  round1Deadline: "",
+  round2Date: "",
+  round2Deadline: "",
+  finalRoundDate: "",
+  finalRoundDeadline: "",
+  outcome: "",
+  gmailThreadId: "",
+  lastGmailSync: "",
+};
+
 /**
  * Column header names in sheet order.
  */
@@ -37,7 +51,25 @@ export const SHEET_COLUMNS = [
   "Department",
   "Work Arrangement",
   "Job URL",
+  "Current Stage",
+  "OA Deadline",
+  "Round 1 Date",
+  "Round 1 Deadline",
+  "Round 2 Date",
+  "Round 2 Deadline",
+  "Final Round Date",
+  "Final Round Deadline",
+  "Outcome",
+  "Gmail Thread ID",
+  "Last Gmail Sync",
 ] as const;
+
+export const SHEET_COLUMN_INDEX = Object.freeze(
+  SHEET_COLUMNS.reduce<Record<(typeof SHEET_COLUMNS)[number], number>>((acc, column, index) => {
+    acc[column] = index;
+    return acc;
+  }, {} as Record<(typeof SHEET_COLUMNS)[number], number>)
+);
 
 /**
  * Serializes a JobRecord + dateApplied into a 9-element string array
@@ -54,6 +86,17 @@ export function recordToRow(record: JobRecord, dateApplied: string): string[] {
     sanitize(record.department),
     sanitize(record.workArrangement),
     sanitize(record.jobUrl),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.currentStage),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.oaDeadline),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.round1Date),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.round1Deadline),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.round2Date),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.round2Deadline),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.finalRoundDate),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.finalRoundDeadline),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.outcome),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.gmailThreadId),
+    sanitize(EMPTY_APPLICATION_STAGE_FIELDS.lastGmailSync),
   ];
 }
 

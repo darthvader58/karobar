@@ -1,5 +1,12 @@
 import { SyncStorage, LocalStorage, StoredRecord } from "../shared/types";
 
+const DEFAULT_GMAIL_SYNC_CONFIG = Object.freeze({
+  enabled: false,
+  extractionEndpoint: "",
+  gmailQuery:
+    '(interview OR recruiter OR "online assessment" OR "coding challenge" OR "technical screen" OR "application update") newer_than:30d',
+});
+
 // --- chrome.storage.sync wrappers ---
 
 export async function getSync<K extends keyof SyncStorage>(
@@ -11,7 +18,14 @@ export async function getSync<K extends keyof SyncStorage>(
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(result[key] as SyncStorage[K] | undefined);
+          const value = result[key] as SyncStorage[K] | undefined;
+          if (key === "gmailSyncConfig") {
+            resolve(
+              { ...DEFAULT_GMAIL_SYNC_CONFIG, ...(value as object | undefined) } as SyncStorage[K]
+            );
+            return;
+          }
+          resolve(value);
         }
       });
     });
@@ -50,7 +64,16 @@ export async function getLocal<K extends keyof LocalStorage>(
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(result[key] as LocalStorage[K] | undefined);
+          const value = result[key] as LocalStorage[K] | undefined;
+          if (key === "processedGmailMessageIds") {
+            resolve(((value as string[] | undefined) ?? []) as LocalStorage[K]);
+            return;
+          }
+          if (key === "lastGmailSyncAt") {
+            resolve(((value as string | undefined) ?? "") as LocalStorage[K]);
+            return;
+          }
+          resolve(value);
         }
       });
     });
@@ -105,3 +128,5 @@ export async function getRecentRecords(): Promise<StoredRecord[]> {
     throw err;
   }
 }
+
+export { DEFAULT_GMAIL_SYNC_CONFIG };

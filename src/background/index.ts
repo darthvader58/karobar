@@ -10,13 +10,18 @@ import {
   StatusResponse,
   LogJobRecordResponse,
   CheckDuplicateResponse,
+  GmailSyncResponse,
 } from "../shared/types";
 import { getToken, signOut, isAuthenticated, describeAuthError } from "./auth";
 import { sheetsClient } from "./sheetsClient";
-import { getSync, setSync, getLocal } from "./storage";
+import { DEFAULT_GMAIL_SYNC_CONFIG, getSync, setSync, getLocal } from "./storage";
 import { addRecentRecord } from "./storage";
 import { checkDuplicate, recordUrl } from "./duplicates";
 import { enqueue, getQueue } from "./failedQueue";
+import { runGmailSync } from "./gmailSync";
+
+const GMAIL_SYNC_ALARM = "gmail-sync";
+const GMAIL_SYNC_PERIOD_MINUTES = 15;
 
 // ---------------------------------------------------------------------------
 // Message listener
@@ -123,10 +128,35 @@ async function handleMessage(
       case "GET_STATUS": {
         const authenticated = await isAuthenticated();
         const sheetId = (await getSync("sheetId")) ?? "";
+        const gmailSyncConfig = (await getSync("gmailSyncConfig")) ?? DEFAULT_GMAIL_SYNC_CONFIG;
+        const lastGmailSyncAt = (await getLocal("lastGmailSyncAt")) ?? "";
         sendResponse({
           isAuthenticated: authenticated,
           sheetId,
+          gmailSyncConfig,
+          lastGmailSyncAt,
         } satisfies StatusResponse);
+        break;
+      }
+
+      case "SAVE_GMAIL_CONFIG": {
+        await setSync("gmailSyncConfig", message.config);
+        sendResponse({ success: true });
+        break;
+      }
+
+      case "RUN_GMAIL_SYNC": {
+        try {
+          const result = await runGmailSync();
+          sendResponse(result satisfies GmailSyncResponse);
+        } catch (err) {
+          sendResponse({
+            success: false,
+            processedCount: 0,
+            updatedCount: 0,
+            error: err instanceof Error ? err.message : "Gmail sync failed.",
+          } satisfies GmailSyncResponse);
+        }
         break;
       }
 
@@ -187,4 +217,25 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         // Tab may not have content script — ignore
       });
   }
+});
+
+function scheduleGmailSyncAlarm(): void {
+  chrome.alarms.create(GMAIL_SYNC_ALARM, {
+    periodInMinutes: GMAIL_SYNC_PERIOD_MINUTES,
+  });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  scheduleGmailSyncAlarm();
+});
+
+chrome.runtime.onStartup?.addListener(() => {
+  scheduleGmailSyncAlarm();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name !== GMAIL_SYNC_ALARM) return;
+  void runGmailSync().catch((err) => {
+    console.error("[gmail-sync] Alarm sync failed:", err);
+  });
 });
