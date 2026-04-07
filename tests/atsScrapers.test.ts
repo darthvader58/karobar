@@ -1,4 +1,5 @@
 import { greenhouseScraper } from "../src/content/scraper/platforms/greenhouse";
+import { ashbyScraper } from "../src/content/scraper/platforms/ashby";
 import { icimsScraper } from "../src/content/scraper/platforms/icims";
 import { linkedinScraper } from "../src/content/scraper/platforms/linkedin";
 import { leverScraper } from "../src/content/scraper/platforms/lever";
@@ -55,6 +56,92 @@ describe("ATS scraper regressions", () => {
     expect(record.employmentType).toBe("Internship");
     expect(record.jobUrl).toBe(
       "https://job-boards.greenhouse.io/samsungresearchamericainternship/jobs/8216250002"
+    );
+  });
+
+  it("scrapes Ashby postings from runtime app data", () => {
+    setPage(
+      "https://jobs.ashbyhq.com/openai/c9861998-2746-4453-b642-c126a24b6f5d",
+      `<!doctype html>
+      <html>
+        <head>
+          <title>Forward Deployed Engineer, API</title>
+          <meta property="og:title" content="Forward Deployed Engineer, API">
+        </head>
+        <body></body>
+      </html>`
+    );
+    (window as unknown as { __appData?: unknown }).__appData = {
+      organization: { name: "OpenAI", hostedJobsPageSlug: "openai" },
+      posting: {
+        id: "c9861998-2746-4453-b642-c126a24b6f5d",
+        title: "Forward Deployed Engineer, API",
+        departmentName: "Engineering",
+        teamName: "API",
+        locationName: "San Francisco",
+        workplaceType: "Hybrid",
+        employmentType: "FullTime",
+        compensationTierSummary: "$220K – $300K • Offers Equity",
+      },
+      jobBoard: { name: "OpenAI Jobs" },
+    };
+
+    const record = ashbyScraper.scrape();
+
+    expect(record.jobTitle).toBe("Forward Deployed Engineer, API");
+    expect(record.companyName).toBe("OpenAI");
+    expect(record.location).toBe("San Francisco");
+    expect(record.employmentType).toBe("Full-time");
+    expect(record.department).toBe("API");
+    expect(record.workArrangement).toBe("Hybrid");
+    expect(record.jobUrl).toBe("https://jobs.ashbyhq.com/openai/c9861998-2746-4453-b642-c126a24b6f5d");
+  });
+
+  it("scrapes Ashby application pages by matching the posting id in the job board payload", () => {
+    setPage(
+      "https://jobs.ashbyhq.com/openai/c9861998-2746-4453-b642-c126a24b6f5d/application",
+      `<!doctype html>
+      <html>
+        <head>
+          <title>Apply for Forward Deployed Engineer, API</title>
+        </head>
+        <body>
+          <h1 data-testid="job-posting-title">Forward Deployed Engineer, API</h1>
+        </body>
+      </html>`
+    );
+    (window as unknown as { __appData?: unknown }).__appData = {
+      organization: { name: "OpenAI", hostedJobsPageSlug: "openai" },
+      posting: null,
+      jobBoard: {
+        name: "OpenAI Jobs",
+        postings: [
+          {
+            id: "c9861998-2746-4453-b642-c126a24b6f5d",
+            title: "Forward Deployed Engineer, API",
+            departmentName: "Engineering",
+            teamName: "API",
+            locationName: "San Francisco",
+            workplaceType: "Hybrid",
+            employmentType: "FullTime",
+            compensationTierSummary: "$220K – $300K • Offers Equity",
+          },
+        ],
+      },
+    };
+
+    expect(matchKnownPlatform(window.location.href)).toEqual({ platform: "ashby" });
+
+    const record = ashbyScraper.scrape();
+
+    expect(record.jobTitle).toBe("Forward Deployed Engineer, API");
+    expect(record.companyName).toBe("OpenAI");
+    expect(record.location).toBe("San Francisco");
+    expect(record.employmentType).toBe("Full-time");
+    expect(record.department).toBe("API");
+    expect(record.workArrangement).toBe("Hybrid");
+    expect(record.jobUrl).toBe(
+      "https://jobs.ashbyhq.com/openai/c9861998-2746-4453-b642-c126a24b6f5d/application"
     );
   });
 

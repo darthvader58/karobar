@@ -6,6 +6,7 @@ import { EMPTY_JOB_RECORD } from "../../shared/sanitize";
 // Side-effect imports — trigger self-registration into PLATFORM_REGISTRY
 import './platforms/linkedin';
 import './platforms/greenhouse';
+import './platforms/ashby';
 import './platforms/icims';
 import './platforms/workday';
 import './platforms/ripplematch';

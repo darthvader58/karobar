@@ -16,6 +16,11 @@ export const KNOWN_PLATFORM_PATTERNS: KnownPlatformPattern[] = [
     pathPattern: /.*/,
   },
   {
+    platform: "ashby",
+    hostname: /^jobs\.ashbyhq\.com$/i,
+    pathPattern: /.*/,
+  },
+  {
     platform: "icims",
     hostname: /\.icims\.com$/i,
     pathPattern: /\/jobs?(?:\/|$)/i,
